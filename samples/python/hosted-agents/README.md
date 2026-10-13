@@ -6,8 +6,6 @@ Samples for building, deploying, and managing hosted agents on [Microsoft Foundr
 
 ### Quickstart
 
-**Required Python environment:** Python 3.13 or later and [uv](https://docs.astral.sh/uv/getting-started/installation/) installed outside the project virtual environment. See [Prerequisites](#prerequisites) for Azure and deployment-tool requirements.
-
 Pick the tool that matches your workflow — both deploy the same sample image to the same Foundry runtime, so you can switch between them at any point.
 
 | Tool | Best for | Get started |
@@ -32,7 +30,7 @@ You'll have a running agent in minutes.
 > **Prerequisites:** Install the Foundry Toolkit VS Code extension and sign in to Azure.
 
 1. Clone this repo and open a sample folder under `samples/python/hosted-agents/` in VS Code.
-2. [Synchronize the Python environment](#python-dependencies), then start the agent locally following the sample's run instructions (e.g. `azd ai agent run` or `uv run --no-sync python main.py`).
+2. Start the agent locally following the sample's run instructions (e.g. `azd ai agent run` or `python main.py`).
 3. Open the Command Palette (`Ctrl+Shift+P`) and run **Foundry Toolkit: Open Agent Inspector** to chat with the running agent.
 4. When you're ready to deploy, run **Foundry Toolkit: Deploy Hosted Agent** to build the container image in ACR, register the agent version, and assign the required RBAC roles automatically.
 
@@ -208,15 +206,7 @@ Already built an agent with CrewAI or your own code? The protocol SDKs (`azure-a
 
 ## Python dependencies
 
-Use `pyproject.toml` with `uv.lock` to manage Python dependencies. Python 3.13 or later and uv installed outside the project virtual environment are required. The lockfile captures the complete dependency graph; CI validates uv locks with a pinned uv version and a frozen production export.
-
-Navigate to the sample's service directory (the `services.<name>.project` path in its `azure.yaml`) and create the locked environment:
-
-```bash
-uv sync --frozen
-```
-
-For local execution, use `uv run --no-sync python main.py` from the same directory, or follow the sample's `azd ai agent run` instructions. In VS Code, run **Python: Select Interpreter** and select the `.venv` created by uv.
+New Python Hosted Agent runtimes use `pyproject.toml` with `uv.lock` by default. A fully resolved `requirements.txt` remains accepted as a backward-compatible fallback. The selected artifact must capture the complete dependency graph; CI validates uv locks with a pinned uv version and a frozen production export.
 
 See the [Python Hosted Agent dependency policy](DEPENDENCY_POLICY.md) for pinning rules, authoring-tool examples, validation commands, ratchet behavior, and exceptions.
 
@@ -228,7 +218,7 @@ Every sample deploys the same way and supports two equivalent paths. Pick the on
 | --- | --- | --- |
 | **Install** | [Install `azd`](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd) + `azd ext install microsoft.foundry` | Install the Foundry Toolkit VS Code extension |
 | **Open the sample** | `azd ai agent init -m <azure.yaml>` — adopts the sample's `azure.yaml` and sets up env config | Clone the repo and open the sample folder in VS Code |
-| **Run locally** | Synchronize dependencies with `uv sync --frozen`, then use `azd ai agent run` or `uv run --no-sync python main.py` | Same as `azd`/manual, then open **Foundry Toolkit: Open Agent Inspector** to chat with the running agent |
+| **Run locally** | `azd ai agent run` (or `python main.py`) | Same as `azd`/manual, then open **Foundry Toolkit: Open Agent Inspector** to chat with the running agent |
 | **Provision Azure resources** | `azd provision` (creates Foundry project, model deployment, ACR, App Insights if needed) | Guided dialog in **Foundry Toolkit: Deploy Hosted Agent** — reuses existing project or provisions a new one |
 | **Deploy to Foundry** | `azd deploy` (or `azd up` to provision + deploy) | **Foundry Toolkit: Deploy Hosted Agent** — builds image in ACR, registers the agent version, assigns RBAC |
 | **Tear down** | `azd down` | Delete the agent in the Foundry portal or with `az` CLI |
@@ -255,7 +245,7 @@ The [Foundry Toolkit VS Code extension](https://learn.microsoft.com/en-us/azure/
 Or, if you've already cloned this repository:
 
 1. Open a sample folder under `samples/python/hosted-agents/` in VS Code.
-2. [Synchronize the Python environment](#python-dependencies), then start the agent locally with `azd ai agent run` or `uv run --no-sync python main.py` (see the sample README for details). The agent runs on `http://localhost:8088/`.
+2. Start the agent locally with `azd ai agent run` or `python main.py` (see the sample README for details). The agent runs on `http://localhost:8088/`.
 3. Open the Command Palette (`Ctrl+Shift+P`) and run **Foundry Toolkit: Open Agent Inspector** to chat with the running agent.
 4. When you're ready to deploy, run **Foundry Toolkit: Deploy Hosted Agent**. The extension opens a tab-based wizard and reads `agent.yaml` to auto-populate what it can:
    - If prompted, complete **Foundry Project Setup** to pick the subscription and Foundry project (or create a new one) to deploy to.
@@ -307,8 +297,7 @@ Here is a hosted agent sample with Invocations protocol that is compatible with 
 - **One of the following deploy tools:**
   - **Azure Developer CLI (`azd`) 1.27.1 or later** — [install](https://learn.microsoft.com/en-us/azure/foundry/agents/quickstarts/quickstart-hosted-agent?pivots=azd), or
   - **Foundry Toolkit VS Code Extension** — [install](https://learn.microsoft.com/en-us/azure/foundry/agents/quickstarts/quickstart-hosted-agent?pivots=vscode)
-- **Python 3.13 or later**
-- **[uv](https://docs.astral.sh/uv/getting-started/installation/)** installed outside the project virtual environment
+- **Python 3.12+**
 
 That's it. Both `azd ai agent init` and the Foundry Toolkit VS Code extension will create a Foundry project and deploy a model for you if you don't already have one. Container images are built remotely using ACR Tasks by default — **Docker is not required** unless you want to build locally.
 
