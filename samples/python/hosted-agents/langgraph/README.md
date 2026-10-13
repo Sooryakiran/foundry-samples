@@ -51,11 +51,16 @@ with `az login` during local development.
 
 #### Prerequisites
 
-1. **Azure Developer CLI (`azd`)**
+1. **Python version declared by the selected runtime's `pyproject.toml`**
+
+2. **uv 0.11.7 or later**
+   - [Install uv](https://docs.astral.sh/uv/getting-started/installation/) and verify it is available on `PATH`: `uv --version`
+
+3. **Azure Developer CLI (`azd`)**
    - [Install azd](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd) and the AI agent extension: `azd ext install azure.ai.agents`
    - Authenticated: `azd auth login`
 
-2. **Azure Subscription**
+4. **Azure Subscription**
 
 #### Create a new project
 
@@ -137,16 +142,16 @@ Or in PowerShell:
 
 > **Invocations protocol note:** The `curl` examples above target the Responses endpoint (`/responses`). For Invocations samples, the endpoint is `/invocations` and the request body uses `"message"` instead of `"input"`. Session continuity uses the `agent_session_id` URL parameter and the `x-agent-session-id` response header. See [`invocations/01-langgraph-chat/`](invocations/01-langgraph-chat/) for full examples.
 
-### Using `python`
+### Using `uv`
 
 #### Prerequisites
 
 1. An existing Foundry project
 2. A deployed model in your Foundry project
 3. Azure CLI installed and authenticated
-4. Python 3.10 or later
+4. Python version declared by the selected runtime's `pyproject.toml`
 
-#### Running the Agent Host with Python
+#### Running the Agent Host with uv
 
 Clone the repository containing the sample code:
 
@@ -157,23 +162,17 @@ cd foundry-samples/samples/python/hosted-agents/langgraph
 
 #### Environment setup
 
-1. Navigate to the sample directory you want to explore. Create a virtual environment:
+1. Install uv if it is not already available:
 
    ```bash
-   python -m venv .venv
-
-   # Windows
-   .venv\Scripts\Activate
-
-   # macOS/Linux
-   source .venv/bin/activate
+   python -m pip install uv
    ```
 
-2. Ensure `pip` is version 26.1 or newer (check with `pip --version`); older versions fail to resolve the samples' dependencies. Upgrade if needed, then install:
+2. Change to the selected runtime's service directory and sync its committed environment:
 
    ```bash
-   python -m pip install --upgrade pip
-   pip install -r requirements.txt
+   cd <sample>/src/<service>
+   uv sync --frozen
    ```
 
 3. Create a `.env` file with your Foundry configuration following the `.env.example` file in the sample.
@@ -189,10 +188,10 @@ cd foundry-samples/samples/python/hosted-agents/langgraph
 From the sample's source directory, run the protocol selected by its `azure.yaml`:
 
 ```bash
-python -m langchain_azure_ai.agents.hosting.run --protocol responses
+uv run --no-sync python -m langchain_azure_ai.agents.hosting.run --protocol responses
 ```
 
-The resilient Invocations, deep-agent, and custom-host exceptions use `python main.py` because they configure unsupported host behavior or manage resources for the server lifetime.
+The resilient Invocations, deep-agent, and custom-host exceptions use `uv run --no-sync python main.py` because they configure unsupported host behavior or manage resources for the server lifetime.
 
 Right now, the agent host should be running on `http://localhost:8088`
 

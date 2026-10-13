@@ -56,7 +56,8 @@ continue the latest completed checkpoint.
 ### Prerequisites
 
 - Python 3.12 or later
-- [`uv`](https://docs.astral.sh/uv/)
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) 0.11.7 or later,
+  installed and available on `PATH`
 - [Azure Developer CLI (`azd`)](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd)
 - Azure CLI authenticated with `az login`
 - A Microsoft Foundry project and model deployment accessible through
@@ -98,8 +99,8 @@ In another terminal, start the Textual CUI:
 
 ```bash
 cd client
-uv sync
-uv run python client.py
+uv sync --frozen
+uv run --no-sync python client.py
 ```
 
 Ask it to book a trip. The CUI displays the proposed `book_trip` arguments
@@ -131,8 +132,8 @@ and Python extensions. Install the agent dependencies and start the host:
 
 ```bash
 cd src/langchain-azure-resilient-responses
-python -m pip install -r requirements.txt
-python -m langchain_azure_ai.agents.hosting.run --protocol responses \
+uv sync --frozen
+uv run --no-sync python -m langchain_azure_ai.agents.hosting.run --protocol responses \
   --option resilient_background=true \
   --option steerable_conversations=true
 ```
@@ -160,7 +161,7 @@ Start the CUI in another terminal:
 
 ```bash
 cd client
-uv run python client.py
+uv run --no-sync python client.py
 ```
 
 Enter:
@@ -179,7 +180,7 @@ The same flow works against a deployed Foundry agent:
 
 ```bash
 cd client
-uv run python client.py --url "<hosted-responses-endpoint>" --auth
+uv run --no-sync python client.py --url "<hosted-responses-endpoint>" --auth
 ```
 
 After the hosted process restarts, the CUI retrieves the same stored response,
@@ -355,5 +356,5 @@ Run CUI against a deployed Microsoft Foundry agent with Azure authentication:
 
 ```bash
 cd client
-uv run python client.py --url "https://<account>.services.ai.azure.com/api/projects/<project>/agents/<agent-name>/endpoint/protocols/openai/responses?api-version=v1" --auth
+uv run --no-sync python client.py --url "https://<account>.services.ai.azure.com/api/projects/<project>/agents/<agent-name>/endpoint/protocols/openai/responses?api-version=v1" --auth
 ```

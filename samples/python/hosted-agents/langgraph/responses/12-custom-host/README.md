@@ -69,6 +69,12 @@ class AssistantState(TypedDict, total=False):
 
 ## Run with Azure Developer CLI
 
+Prerequisites:
+
+- Python 3.12 or later
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) 0.11.7 or later,
+  installed and available on `PATH`
+
 1. Install and authenticate the required tools:
 
    ```bash
@@ -100,14 +106,11 @@ class AssistantState(TypedDict, total=False):
 From `src/langgraph-custom-host-responses`:
 
 ```bash
-python -m venv .venv
-# Windows: .venv\Scripts\Activate.ps1
-# macOS/Linux: source .venv/bin/activate
-python -m pip install --upgrade pip
-pip install -r requirements.txt
+python -m pip install uv
+uv sync --frozen
 cp .env.example .env
 az login
-python main.py
+uv run --no-sync python main.py
 ```
 
 Send a location-aware request:

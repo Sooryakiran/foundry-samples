@@ -41,7 +41,9 @@ collide with shared toolboxes in the Foundry project.
 
 ## Prerequisites
 
-- Python 3.12+
+- Python 3.13+
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) 0.11.7 or later,
+  installed and available on `PATH`
 - Azure Developer CLI (`azd`) 1.25 or later
 - The Microsoft Foundry `azd` extension
 - An Azure subscription where you can create Foundry resources
@@ -88,9 +90,8 @@ From `src/toolbox-langgraph-user-identity`, create a local environment:
 
 ```bash
 cp .env.example .env
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
+python -m pip install uv
+uv sync --frozen
 ```
 
 Set `FOUNDRY_PROJECT_ENDPOINT`, `AZURE_AI_MODEL_DEPLOYMENT_NAME`, and
@@ -100,7 +101,7 @@ toolbox declared by the sample; running `azd provision` creates them.
 Start the server:
 
 ```bash
-python -m langchain_azure_ai.agents.hosting.run --protocol responses
+uv run --no-sync python -m langchain_azure_ai.agents.hosting.run --protocol responses
 ```
 
 In another terminal, invoke the local Responses endpoint:
