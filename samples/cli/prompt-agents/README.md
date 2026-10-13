@@ -9,3 +9,4 @@ Declarative **prompt agent** samples you deploy with [`azd`](https://aka.ms/azd)
 - [03-mcp-tools](./03-mcp-tools/) — remote MCP server tools
 - [05-skills](./05-skills/) — reusable file-based skill
 - [06-azure-search-rag](./06-azure-search-rag/) — RAG over Azure AI Search
+- [github-copilot-harness](./github-copilot-harness/) — end-to-end GitHub Copilot harness scenarios
