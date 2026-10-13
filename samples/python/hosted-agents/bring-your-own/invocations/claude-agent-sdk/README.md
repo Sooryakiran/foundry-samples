@@ -21,15 +21,17 @@ This sample is configured for **Microsoft Foundry** mode by default
 | `CLAUDE_CODE_USE_FOUNDRY` | Yes (default `1`) | Enables Foundry integration path in Claude Agent SDK |
 | `ANTHROPIC_MODEL` | Built-in default | Explicit startup model set to `claude-opus-4-7`  |
 | `ANTHROPIC_FOUNDRY_BASE_URL` | Auto-generated | Automatically constructed from `FOUNDRY_PROJECT_ENDPOINT` as `https://<resource>.services.ai.azure.com/anthropic` |
-| `TOOLBOX_ENDPOINT` | Optional | Full Foundry toolbox MCP endpoint URL. When set (together with `TOOLBOX_ALLOWED_TOOLS`), the agent validates and exposes the allowlisted toolbox tools to Claude. |
-| `TOOLBOX_NAME` | Optional | Toolbox name. If `TOOLBOX_ENDPOINT` isn't set, the agent builds the latest-version endpoint from this and `FOUNDRY_PROJECT_ENDPOINT`. |
+| `TOOLBOX_ENDPOINT` | Optional at runtime; auto-injected by `azd` | Full Foundry toolbox MCP endpoint URL. The deployed agent receives the versioned endpoint generated for `claude-toolbox`. When set (together with `TOOLBOX_ALLOWED_TOOLS`), the agent validates and exposes the allowlisted toolbox tools to Claude. |
+| `TOOLBOX_NAME` | Optional for standalone runs | Toolbox name. If `TOOLBOX_ENDPOINT` isn't set, the agent builds the latest-version endpoint from this and `FOUNDRY_PROJECT_ENDPOINT`. |
 | `TOOLBOX_ALLOWED_TOOLS` | Required if either toolbox variable above is set | Comma-separated, explicit allowlist of toolbox tool names to expose (e.g. `web_search`). |
 
-## Optional: Consuming an Existing Foundry Toolbox
+## Foundry Toolbox
 
-This sample can optionally connect to an **already-provisioned Foundry Toolbox** so Claude can call toolbox tools (for example `web_search`) during the conversation. This sample only *consumes* a toolbox — it does not create or configure one. Provision the toolbox separately (e.g. with `azd ai toolbox create`) before setting any of the variables below.
+The [`azure.yaml`](azure.yaml) manifest declares a minimal **`claude-toolbox`** service with the built-in `web_search` tool. `azd up` creates the project, toolbox, and agent in dependency order. The agent depends on the toolbox and maps the generated versioned `TOOLBOX_CLAUDE_TOOLBOX_MCP_ENDPOINT` output to `TOOLBOX_ENDPOINT`, with `TOOLBOX_ALLOWED_TOOLS=web_search`.
 
-If neither `TOOLBOX_ENDPOINT` nor `TOOLBOX_NAME` is set, this sample behaves exactly as it did before — no toolbox integration is attempted, and the module-level `TOOLBOX_ALLOWED_TOOLS` check is skipped entirely.
+To add or replace tools, edit the `claude-toolbox` service in `azure.yaml`, update `TOOLBOX_ALLOWED_TOOLS` to match the names Claude may call, then run `azd deploy --all`. Tools that require authentication should use an `azure.ai.connection` service referenced by the toolbox.
+
+The Python runtime still supports an existing toolbox for standalone local use: set `TOOLBOX_ENDPOINT` to its full MCP endpoint, or set `TOOLBOX_NAME` to build the latest-version endpoint from `FOUNDRY_PROJECT_ENDPOINT`. If neither variable is set, toolbox integration is disabled.
 
 ### Fail-loud contract
 
@@ -49,8 +51,16 @@ Each invocation builds its own headers dict (never a shared/mutated global): a M
 ### Prerequisites
 
 - Python 3.12+
-- `az login` 
+- Azure Developer CLI 1.32.0 or later with the unified Foundry extension bundle: `azd ext install microsoft.foundry`
+- `azd auth login`
+- `az login`
 - A Foundry resource with Claude model deployments
+
+Provision the project and toolbox before running the agent locally:
+
+```bash
+azd up
+```
 
 ### Run the agent locally
 
@@ -77,8 +87,13 @@ curl -sS -N -X POST http://localhost:8088/invocations \
 ### Deploy to Foundry
 
 ```bash
-azd provision
-azd deploy
+azd up
+```
+
+After changing the toolbox definition or allowlist, deploy all dependent services together:
+
+```bash
+azd deploy --all
 ```
 
 > After deployment, configure RBAC — see [⚠️ CRITICAL: RBAC Configuration After Deployment](#-critical-rbac-configuration-after-deployment) below.
