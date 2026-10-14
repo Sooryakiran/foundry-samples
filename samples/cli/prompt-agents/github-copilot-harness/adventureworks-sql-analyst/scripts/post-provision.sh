@@ -23,14 +23,26 @@ fi
 
 firewall_rule_created=false
 cleanup() {
+  exit_code=$?
+  trap - EXIT
   if [ "$firewall_rule_created" = true ]; then
-    az sql server firewall-rule delete \
+    if ! az sql server firewall-rule delete \
       --subscription "$subscription_id" \
       --resource-group "$resource_group_name" \
       --server "$sql_server_name" \
       --name AllowDeployerIp \
-      --only-show-errors >/dev/null || true
+      --only-show-errors >/dev/null; then
+      echo 'Failed to remove temporary Azure SQL firewall rule AllowDeployerIp.' >&2
+      echo "Remove it manually: az sql server firewall-rule delete --subscription $subscription_id --resource-group $resource_group_name --server $sql_server_name --name AllowDeployerIp" >&2
+      if [ "$exit_code" -eq 0 ]; then
+        exit_code=1
+      fi
+    fi
   fi
+  if [ "$exit_code" -eq 0 ]; then
+    echo "AdventureWorksLT is ready with ${product_count} products."
+  fi
+  exit "$exit_code"
 }
 trap cleanup EXIT
 
@@ -82,4 +94,3 @@ if ! sqlcmd -S "$sql_server_fqdn" -d "$sql_database_name" -G -b -Q "$grant_sql";
 fi
 
 product_count=$(sqlcmd -S "$sql_server_fqdn" -d "$sql_database_name" -G -h -1 -W -Q 'SET NOCOUNT ON; SELECT COUNT(*) FROM SalesLT.Product;' | tr -d '[:space:]')
-echo "AdventureWorksLT is ready with ${product_count} products."

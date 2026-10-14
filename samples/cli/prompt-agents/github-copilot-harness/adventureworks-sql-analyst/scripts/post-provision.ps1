@@ -19,6 +19,8 @@ if (-not $sqlServerFqdn -or -not $sqlServerName -or -not $sqlDatabaseName -or -n
 }
 
 $firewallRuleCreated = $false
+$operationError = $null
+$cleanupErrorMessage = $null
 
 $grantSql = @"
 IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'$namespaceName')
@@ -73,7 +75,9 @@ try {
   if ($LASTEXITCODE -ne 0) {
     throw 'Failed to verify AdventureWorksLT sample data.'
   }
-  Write-Host "AdventureWorksLT is ready with $($productCount.Trim()) products."
+}
+catch {
+  $operationError = $_
 }
 finally {
   if ($firewallRuleCreated) {
@@ -83,5 +87,20 @@ finally {
       --server $sqlServerName `
       --name AllowDeployerIp `
       --only-show-errors | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+      $cleanupErrorMessage = "Failed to remove temporary Azure SQL firewall rule AllowDeployerIp. Remove it manually: az sql server firewall-rule delete --subscription $subscriptionId --resource-group $resourceGroupName --server $sqlServerName --name AllowDeployerIp"
+    }
   }
 }
+
+if ($operationError -and $cleanupErrorMessage) {
+  throw "$($operationError.Exception.Message) Cleanup also failed: $cleanupErrorMessage"
+}
+if ($operationError) {
+  throw $operationError
+}
+if ($cleanupErrorMessage) {
+  throw $cleanupErrorMessage
+}
+
+Write-Host "AdventureWorksLT is ready with $($productCount.Trim()) products."
