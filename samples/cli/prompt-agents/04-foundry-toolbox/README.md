@@ -1,4 +1,4 @@
-# Managed Agent with a Foundry Toolbox
+# Prompt Agent with the GitHub Copilot harness and a Foundry Toolbox
 
 A GitHub Copilot harness agent backed by a **Foundry Toolbox**, configured in [`azure.yaml`](./azure.yaml).
 
