@@ -34,6 +34,7 @@ class PythonReleaseParser(HTMLParser):
             self.in_release_number = True
         elif tag == "a" and self.in_release_number:
             href = attributes.get("href") or ""
+            self.pending_version = None
             self.in_release_link = href.startswith("/downloads/release/python-")
         elif tag == "span" and "release-date" in classes and self.pending_version:
             self.in_release_date = True
@@ -47,7 +48,7 @@ class PythonReleaseParser(HTMLParser):
 
     def handle_data(self, data: str) -> None:
         if self.in_release_link:
-            match = re.search(r"Python ([0-9]+\.[0-9]+\.[0-9]+)", data)
+            match = re.fullmatch(r"\s*Python ([0-9]+\.[0-9]+\.[0-9]+)\s*", data)
             if match:
                 self.pending_version = match.group(1)
         elif self.in_release_date and self.pending_version:
@@ -133,7 +134,10 @@ def current_python_release() -> tuple[str, date]:
         raise AssertionError(
             "Could not read the current stable release from Python.org"
         )
-    version, release_date = parser.releases[0]
+    version, release_date = max(
+        parser.releases,
+        key=lambda release: tuple(int(part) for part in release[0].split(".")),
+    )
     return version, parse_release_date(release_date)
 
 

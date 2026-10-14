@@ -162,9 +162,12 @@ def azd_env_value(name: str) -> str:
 
 def response_text_and_files(
     response: dict[str, Any],
+    excluded_file_ids: set[str] | None = None,
 ) -> tuple[str, list[dict[str, str]]]:
     text_parts: list[str] = []
-    generated_files: list[dict[str, str]] = []
+    files_by_id: dict[str, dict[str, str]] = {}
+    excluded_file_ids = excluded_file_ids or set()
+    has_file_label = False
 
     for item in response.get("output", []):
         if item.get("type") != "message":
@@ -172,45 +175,56 @@ def response_text_and_files(
         for content in item.get("content", []):
             if content.get("type") != "output_text":
                 continue
-            if content.get("text"):
-                text_parts.append(content["text"])
+            content_text = content.get("text", "")
+            if content_text:
+                text_parts.append(content_text)
+                if re.search(
+                    r"(?im)^[ \t]*(?:\*\*)?File:",
+                    content_text,
+                ):
+                    has_file_label = True
+                for file_match in re.finditer(
+                    r"(?im)^[ \t]*(?:\*\*)?File:(?:\*\*)?[ \t]*"
+                    r"`?([^`\r\n]+?)`?[ \t]*(?:\r?\n[ \t]*)+"
+                    r"(?:\*\*)?Download ID:(?:\*\*)?[ \t]*"
+                    r"`?([A-Za-z][A-Za-z0-9_-]+)`?[ \t]*$",
+                    content_text,
+                ):
+                    filename = file_match.group(1).strip()
+                    file_id = file_match.group(2)
+                    if file_id not in excluded_file_ids:
+                        files_by_id.setdefault(
+                            file_id,
+                            {"file_id": file_id, "filename": filename},
+                        )
             for annotation in content.get("annotations", []):
                 if annotation.get("type") == "file_citation":
-                    generated_files.append(
-                        {
-                            "file_id": annotation["file_id"],
-                            "filename": annotation["filename"],
+                    file_id = annotation.get("file_id")
+                    filename = annotation.get("filename")
+                    if file_id and filename and file_id not in excluded_file_ids:
+                        files_by_id[file_id] = {
+                            "file_id": file_id,
+                            "filename": filename,
                         }
-                    )
 
     text = "\n".join(text_parts)
-    if not generated_files:
-        filename = None
-        file_id = None
-        for line in text.splitlines():
-            normalized = line.replace("**", "").strip()
-            if normalized.startswith("File:"):
-                filename = normalized.split(":", 1)[1].strip().strip("`")
-            elif normalized.startswith("Download ID:"):
-                file_id = normalized.split(":", 1)[1].strip().strip("`")
-        if not filename:
-            filename_matches = re.findall(
-                r"\b([A-Za-z0-9][A-Za-z0-9._-]*\.(?:csv|json|jpe?g|pdf|png|svg|txt|webp|xlsx))\b",
-                text,
-                flags=re.IGNORECASE,
-            )
-            if filename_matches:
-                filename = filename_matches[-1]
-        if not file_id:
-            file_id_match = re.search(
-                r"Download ID:\s*`?([A-Za-z][A-Za-z0-9_-]+)`?", text
-            )
-            if file_id_match:
-                file_id = file_id_match.group(1)
-        if filename and file_id:
-            generated_files.append({"file_id": file_id, "filename": filename})
+    if not has_file_label:
+        filename_matches = re.findall(
+            r"\b([A-Za-z0-9][A-Za-z0-9._-]*\.(?:csv|json|jpe?g|pdf|png|svg|txt|webp|xlsx))\b",
+            text,
+            flags=re.IGNORECASE,
+        )
+        file_id_match = re.search(r"Download ID:\s*`?([A-Za-z][A-Za-z0-9_-]+)`?", text)
+        if filename_matches and file_id_match:
+            filename = filename_matches[-1]
+            file_id = file_id_match.group(1)
+            if file_id not in excluded_file_ids:
+                files_by_id.setdefault(
+                    file_id,
+                    {"file_id": file_id, "filename": filename},
+                )
 
-    return text, generated_files
+    return text, list(files_by_id.values())
 
 
 def run_prompt(
@@ -224,7 +238,10 @@ def run_prompt(
     if response.get("status") != "completed":
         raise RuntimeError(json.dumps(response.get("error") or response, indent=2))
 
-    text, generated_files = response_text_and_files(response)
+    text, generated_files = response_text_and_files(
+        response,
+        excluded_file_ids={file_id},
+    )
     print(f"\nAgent: {text or '[No text response]'}")
 
     for generated_file in generated_files:

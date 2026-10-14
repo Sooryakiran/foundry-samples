@@ -28,9 +28,8 @@ come from the declared Foundry `web_search` tool rather than the harness-native 
   User** for the developer, Agent runtime identity, and user identities involved in OAuth.
 - Microsoft 365 Mail and Work IQ access for each calling user.
 - Tenant consent for the Work IQ User and Mail permissions required by your organization.
-- The unsigned `azure.ai.routines` PR build from
-  [Azure/azure-dev#10242](https://github.com/Azure/azure-dev/pull/10242). Released beta.9 predates
-  the creator-dispatch-identity fix.
+- The Microsoft Foundry `azd` extension pack. The sample pins `azure.ai.routines` 1.0.0-beta.10,
+  which includes creator dispatch identity.
 
 Work IQ calls run with the signed-in user's identity. Application-only authentication is not
 supported for this scenario.
@@ -49,16 +48,9 @@ From this folder:
 
 ```bash
 azd auth login
-azd ext install \
-  "https://azuresdkartifacts.z5.web.core.windows.net/azd/extensions/pr/10242/azure-ai-routines.zip" \
-  --force --no-prompt
 azd env new web-research-email-digest-dev --location canadacentral
 azd up
 ```
-
-The PR bundle is an unsigned development build. Install it only if you trust PR `#10242`. The sample
-pins the current PR build, `1.0.0-beta.9.pr.10242.6936260`; replace the bundle and version pin when a
-released Routines extension contains the creator-dispatch-identity fix.
 
 Canada Central is the sample default. Replace `canadacentral` with another supported Foundry region
 when needed. `azd up` prompts for the target subscription when it isn't already configured. It
@@ -116,8 +108,9 @@ Microsoft Entra identity that first creates it. Creator identity is create-only:
 preserve it, and changing the identity requires deleting and recreating the Routine.
 
 If an existing Routine was created with released beta.9 or an earlier extension, enabling or
-redeploying it doesn't add creator identity. Install the PR build, delete the existing Routine, and
-run `azd deploy daily-foundry-news-digest` to recreate it from this manifest.
+redeploying it doesn't add creator identity. Delete the existing Routine, then run
+`azd deploy daily-foundry-news-digest` with this sample's beta.10 extension to recreate it from the
+manifest.
 
 To run it immediately and inspect recent runs:
 
