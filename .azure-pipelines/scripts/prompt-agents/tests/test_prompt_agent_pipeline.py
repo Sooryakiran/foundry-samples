@@ -43,7 +43,7 @@ class PipelineTests(unittest.TestCase):
 
     def test_automatic_triggers_and_provision_modes(self):
         paths = {
-            "samples/python/prompt-agents/**",
+            "samples/cli/prompt-agents/**",
             ".azure-pipelines/prompt-agents-samples-ci.yml",
             ".azure-pipelines/scripts/prompt-agents/**",
             ".azure-pipelines/prompt-agent-tests/**",
@@ -149,7 +149,7 @@ class SummaryTests(unittest.TestCase):
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
         self.root = Path(directory.name)
-        self.entries = [{"comboId": "python-prompt-agents-basic", "samplePath": "samples/python/prompt-agents/basic",
+        self.entries = [{"comboId": "cli-prompt-agents-basic", "samplePath": "samples/cli/prompt-agents/basic",
                          "executionProfile": "prompt"}]
 
     def test_cli_fails_closed_for_missing_and_invalid_results(self):

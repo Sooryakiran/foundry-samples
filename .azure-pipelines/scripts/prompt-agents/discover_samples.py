@@ -16,8 +16,8 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / ".github" / "scripts"))
 from hosted_agent_fixture import fixture_dir_for_sample, sample_dir_for_fixture
 
-# Add language roots here and their matching layout in hosted_agent_fixture.py.
-SAMPLE_ROOTS = ("samples/python/prompt-agents",)
+# Add sample roots here and their matching layout in hosted_agent_fixture.py.
+SAMPLE_ROOTS = ("samples/cli/prompt-agents",)
 FULL_RUN_PATHS = {
     ".azure-pipelines/prompt-agents-samples-ci.yml",
     ".github/scripts/hosted_agent_fixture.py",

@@ -13,7 +13,7 @@ SCRIPT = Path(__file__).resolve().parents[1] / "discover_samples.py"
 SPEC = importlib.util.spec_from_file_location("prompt_discovery", SCRIPT)
 discovery = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(discovery)
-SAMPLE_ROOT = "samples/python/prompt-agents"
+SAMPLE_ROOT = "samples/cli/prompt-agents"
 
 
 class DiscoveryTests(unittest.TestCase):
@@ -45,7 +45,7 @@ class DiscoveryTests(unittest.TestCase):
         result = discovery.discover(self.repo)
         self.assertEqual((result["count"], result["count_prompt"], result["count_managed"]), (2, 1, 1))
         self.assertEqual(len(result["matrix_all"]), 2)
-        fixture = ".azure-pipelines/prompt-agent-tests/python/04-foundry-toolbox/test-spec.yml"
+        fixture = ".azure-pipelines/prompt-agent-tests/cli/04-foundry-toolbox/test-spec.yml"
         selected = discovery.discover(self.repo, [fixture])
         self.assertEqual([entry["executionProfile"] for entry in selected["entries"]], ["managed"])
         for path in discovery.FULL_RUN_PATHS | {discovery.BLACKLIST_PATH}:

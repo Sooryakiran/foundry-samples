@@ -18,7 +18,7 @@ SCRIPT = Path(__file__).resolve().parents[1] / "discover_samples.py"
 SPEC = importlib.util.spec_from_file_location("prompt_discovery_contracts", SCRIPT)
 discovery = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(discovery)
-SAMPLE_ROOT = "samples/python/prompt-agents"
+SAMPLE_ROOT = "samples/cli/prompt-agents"
 
 
 class DiscoveryContractTests(unittest.TestCase):

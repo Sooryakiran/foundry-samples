@@ -8,7 +8,7 @@ or authorize an Azure DevOps pipeline.
 |---|---|---|
 | [hosted-agents-samples-ci.yml](hosted-agents-samples-ci.yml) | Python/C# hosted agents and their test fixtures | Changed samples on PRs; full discovery on relevant `main` pushes, daily at 09:00 UTC, and manual runs |
 | [private-bicep-pr-ci.yml](private-bicep-pr-ci.yml) | Bicep infrastructure templates and diagnostic tooling | Changed templates on PRs and `main` pushes; manual `samplePath` or `validateAll` |
-| [prompt-agents-samples-ci.yml](prompt-agents-samples-ci.yml) | Python prompt/managed azd agents and their contracts | Changed samples on PRs; all eligible samples on relevant `main` pushes, daily at 09:00 UTC, and manual runs |
+| [prompt-agents-samples-ci.yml](prompt-agents-samples-ci.yml) | CLI prompt/managed azd agents and their contracts | Changed samples on PRs; all eligible samples on relevant `main` pushes, daily at 09:00 UTC, and manual runs |
 
 The GitHub [policy checks](../.github/workflows/hosted-agent-policies.yml) remain
 credential-free. The public `trusted` check and

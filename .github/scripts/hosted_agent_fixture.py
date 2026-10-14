@@ -16,8 +16,8 @@ SAMPLE_ROOTS = {
     "python": PurePosixPath("samples/python/hosted-agents"),
     "csharp": PurePosixPath("samples/csharp/hosted-agents"),
 }
-PROMPT_SAMPLE_ROOT = PurePosixPath("samples/python/prompt-agents")
-PROMPT_FIXTURE_ROOT = PurePosixPath(".azure-pipelines/prompt-agent-tests/python")
+PROMPT_SAMPLE_ROOT = PurePosixPath("samples/cli/prompt-agents")
+PROMPT_FIXTURE_ROOT = PurePosixPath(".azure-pipelines/prompt-agent-tests/cli")
 
 
 class FixturePathError(ValueError):

@@ -17,9 +17,9 @@ class SummaryTests(unittest.TestCase):
     def test_missing_invalid_and_failed_recovery_are_failures(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            entries = [{"comboId": "python-prompt-agents-basic", "samplePath": "samples/basic",
+            entries = [{"comboId": "cli-prompt-agents-basic", "samplePath": "samples/basic",
                         "executionProfile": "prompt"}]
-            run = root / "PromptAgentResult-python-prompt-agents-basic/run"
+            run = root / "PromptAgentResult-cli-prompt-agents-basic/run"
             run.mkdir(parents=True)
             result = run / "result.json"
             for content, expected in ((None, "missing/invalid result"), ("{}", "missing/invalid result"),

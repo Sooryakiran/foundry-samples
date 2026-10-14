@@ -35,7 +35,7 @@ exit code. Each sample produces one record. `matrix_all`, `matrix_prompt`, and
 Publish that `entries` array as `entries.json` for later job hydration:
 
 ```sh
-python .azure-pipelines/scripts/prompt-agents/discover_samples.py hydrate --entries entries.json --combo-id python-prompt-agents-01-basic
+python .azure-pipelines/scripts/prompt-agents/discover_samples.py hydrate --entries entries.json --combo-id cli-prompt-agents-01-basic
 ```
 
 Hydration emits exactly one JSON record, rejecting missing or duplicate matches.
@@ -72,14 +72,14 @@ python -m pip install -r .azure-pipelines/scripts/prompt-agents/requirements.txt
 python -m unittest discover -s .azure-pipelines/scripts/prompt-agents/tests -p 'test_*.py'
 ```
 
-## Adding Languages
+## Adding Sample Roots
 
-Discovery roots are configured in `SAMPLE_ROOTS`. To add a language, add its
-`samples/<language>/prompt-agents` root to `SAMPLE_ROOTS` in
-`discover_samples.py` and teach the shared resolver in
-`.github/scripts/hosted_agent_fixture.py` its sample/fixture layout.
+Discovery currently scans `samples/cli/prompt-agents`. To add another sample
+root, update `SAMPLE_ROOTS` in `discover_samples.py` and its matching layout
+in `.github/scripts/hosted_agent_fixture.py`.
 
-The record's `sampleLanguage` comes from the path; classification, filtering,
+The record's `sampleLanguage` is `cli` for these language-agnostic manifests;
+classification, filtering,
 IDs, profile matrices, and hydration need no language-specific branches. Every
 configured root must exist. Update offline CI path triggers to include newly
 enabled roots.
@@ -132,7 +132,7 @@ charges. Use a dedicated CI project. The runner resolves the sample's fixture
 
 ```sh
 bash .azure-pipelines/scripts/prompt-agents/run-prompt-agent.sh \
-  --sample samples/python/prompt-agents/01-basic \
+  --sample samples/cli/prompt-agents/01-basic \
   --project-id /subscriptions/SUB/resourceGroups/RG/providers/Microsoft.CognitiveServices/accounts/ACCOUNT/projects/PROJECT \
   --project-endpoint https://ACCOUNT.services.ai.azure.com/api/projects/PROJECT \
   --model-deployment EXISTING_DEPLOYMENT \

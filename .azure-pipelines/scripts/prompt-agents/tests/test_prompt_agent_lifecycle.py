@@ -225,9 +225,9 @@ class PromptShellTests(unittest.TestCase):
         evaluator = self.repo / ".github/scripts/hosted_agent_test_spec.py"
         evaluator.parent.mkdir(parents=True)
         shutil.copyfile(SCRIPT.parents[3] / ".github/scripts/hosted_agent_test_spec.py", evaluator)
-        self.sample = self.repo / "samples/python/prompt-agents/basic"
+        self.sample = self.repo / "samples/cli/prompt-agents/basic"
         self.sample.mkdir(parents=True)
-        self.fixture = self.repo / ".azure-pipelines/prompt-agent-tests/python/basic/test-spec.yml"
+        self.fixture = self.repo / ".azure-pipelines/prompt-agent-tests/cli/basic/test-spec.yml"
         self.fixture.parent.mkdir(parents=True)
         self.artifacts = self.repo / "artifacts output"
         self.state_path = self.root / f"state-{self.number}.json"

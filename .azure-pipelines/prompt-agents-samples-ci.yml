@@ -9,7 +9,7 @@ trigger:
       - main
   paths:
     include:
-      - samples/python/prompt-agents/**
+      - samples/cli/prompt-agents/**
       - .azure-pipelines/prompt-agents-samples-ci.yml
       - .azure-pipelines/scripts/prompt-agents/**
       - .azure-pipelines/prompt-agent-tests/**
@@ -23,7 +23,7 @@ pr:
       - main
   paths:
     include:
-      - samples/python/prompt-agents/**
+      - samples/cli/prompt-agents/**
       - .azure-pipelines/prompt-agents-samples-ci.yml
       - .azure-pipelines/scripts/prompt-agents/**
       - .azure-pipelines/prompt-agent-tests/**

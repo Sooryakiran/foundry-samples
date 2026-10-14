@@ -63,9 +63,9 @@ class FixturePathTests(unittest.TestCase):
         self.assertEqual(str(resolved), sample)
 
     def test_prompt_fixture_round_trip(self):
-        sample = "samples/python/prompt-agents/01-basic"
+        sample = "samples/cli/prompt-agents/01-basic"
         fixture = module.fixture_dir_for_sample(sample)
-        self.assertEqual(str(fixture), ".azure-pipelines/prompt-agent-tests/python/01-basic")
+        self.assertEqual(str(fixture), ".azure-pipelines/prompt-agent-tests/cli/01-basic")
         self.assertEqual(
             str(module.sample_dir_for_fixture(str(fixture / "test-spec.yml"))), sample
         )
@@ -73,7 +73,7 @@ class FixturePathTests(unittest.TestCase):
     def test_prompt_fixture_requires_sample_path(self):
         with self.assertRaisesRegex(module.FixturePathError, "sample path"):
             module.sample_dir_for_fixture(
-                ".azure-pipelines/prompt-agent-tests/python/test-spec.yml"
+                ".azure-pipelines/prompt-agent-tests/cli/test-spec.yml"
             )
 
     def test_sample_outside_supported_roots_is_rejected(self):
@@ -114,7 +114,7 @@ class SkiplistTests(unittest.TestCase):
             root = Path(directory)
             path = root / module.CI_SKIPLIST
             path.parent.mkdir(parents=True)
-            path.write_text("samples/python/prompt-agents/01-basic\n", encoding="utf-8")
+            path.write_text("samples/cli/prompt-agents/01-basic\n", encoding="utf-8")
             with self.assertRaisesRegex(module.FixturePathError, "hosted-agent"):
                 module.load_skiplist(root, module.CI_SKIPLIST)
 
