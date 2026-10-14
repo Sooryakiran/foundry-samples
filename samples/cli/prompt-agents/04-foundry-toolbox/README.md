@@ -9,5 +9,5 @@ The sample creates a toolbox containing built-in web search as part of
 
 ```bash
 azd up
-azd ai agent invoke "Use your tools to help me with today's task."
+azd ai agent invoke "Search the web for the latest stable Python release and cite the official Python release page."
 ```

@@ -9,7 +9,7 @@ import sys
 import time
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit, urlunsplit
 
 import requests
 from azure.identity import AzureCliCredential
@@ -18,9 +18,39 @@ AGENT_NAME = "csv-chart-analyst"
 MODEL_NAME = "gpt-5.4-mini"
 
 
+def validated_project_endpoint(project_endpoint: str) -> str:
+    parsed = urlsplit(project_endpoint.strip())
+    hostname = (parsed.hostname or "").lower().rstrip(".")
+    path = parsed.path.rstrip("/")
+    path_parts = path.split("/")
+    if parsed.scheme.lower() != "https":
+        raise ValueError("Foundry project endpoint must use HTTPS")
+    if parsed.username or parsed.password or parsed.port not in {None, 443}:
+        raise ValueError(
+            "Foundry project endpoint must not include credentials or a custom port"
+        )
+    if not hostname.endswith(".services.ai.azure.com"):
+        raise ValueError(
+            "Foundry project endpoint host must end with .services.ai.azure.com"
+        )
+    if parsed.query or parsed.fragment:
+        raise ValueError(
+            "Foundry project endpoint must not include a query string or fragment"
+        )
+    if (
+        len(path_parts) != 4
+        or path_parts[1:3] != ["api", "projects"]
+        or path_parts[3] in {"", ".", ".."}
+    ):
+        raise ValueError(
+            "Foundry project endpoint path must be /api/projects/<project>"
+        )
+    return urlunsplit(("https", parsed.netloc, path, "", ""))
+
+
 class FoundryClient:
     def __init__(self, project_endpoint: str) -> None:
-        self.project_endpoint = project_endpoint.rstrip("/")
+        self.project_endpoint = validated_project_endpoint(project_endpoint)
         self.agent_name = AGENT_NAME
         self.agent_endpoint = f"{self.project_endpoint}/agents/{quote(self.agent_name)}/endpoint/protocols/openai"
         self.credential = AzureCliCredential()

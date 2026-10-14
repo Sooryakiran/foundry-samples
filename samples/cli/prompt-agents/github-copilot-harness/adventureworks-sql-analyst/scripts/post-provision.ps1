@@ -44,7 +44,7 @@ try {
       $match = [regex]::Match($probeOutput, "Client with IP address '((?:[0-9]{1,3}\.){3}[0-9]{1,3})'")
       $parsedAddress = $null
       if (-not $match.Success -or -not [System.Net.IPAddress]::TryParse($match.Groups[1].Value, [ref]$parsedAddress) -or $parsedAddress.AddressFamily -ne [System.Net.Sockets.AddressFamily]::InterNetwork) {
-        Write-Error $probeOutput
+        Write-Error $probeOutput -ErrorAction Continue
         throw 'Could not determine the client IPv4 address from the Azure SQL firewall response. Set DEPLOYER_IP_ADDRESS or add your client IP in Azure SQL networking, then rerun azd up.'
       }
       $deployerIpAddress = $parsedAddress.ToString()
