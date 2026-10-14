@@ -42,8 +42,13 @@ region. Regional dependencies that aren't available in Canada Central have separ
 sample and can also be overridden. Use a separate environment for each sample. Follow its README to
 exercise the deployed agent and verify the expected tool calls or generated output.
 
-When you no longer need an isolated sample environment, remove its Azure resources from that sample
-folder:
+When you no longer need an isolated sample environment, follow that sample's **Tear down** or
+**Clean up** section. Some samples have data-plane resources or side effects that require additional
+steps before Azure resource deletion. In particular, the Web Research Email Digest requires you to
+disable and delete its Routine before running `azd down`.
+
+For samples whose README doesn't specify additional steps, remove the Azure resources from that
+sample folder:
 
 ```bash
 azd down --purge --force
