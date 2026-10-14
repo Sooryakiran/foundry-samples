@@ -168,6 +168,8 @@ def response_text_and_files(
     files_by_id: dict[str, dict[str, str]] = {}
     excluded_file_ids = excluded_file_ids or set()
     has_file_label = False
+    file_label = r"(?:File:|\*\*File:\*\*|\*\*File\*\*:)"
+    download_id_label = r"(?:Download ID:|\*\*Download ID:\*\*|\*\*Download ID\*\*:)"
 
     for item in response.get("output", []):
         if item.get("type") != "message":
@@ -179,14 +181,14 @@ def response_text_and_files(
             if content_text:
                 text_parts.append(content_text)
                 if re.search(
-                    r"(?im)^[ \t]*(?:\*\*)?File:",
+                    r"(?im)^[ \t]*(?:\*\*)?File(?:\*\*)?:",
                     content_text,
                 ):
                     has_file_label = True
                 for file_match in re.finditer(
-                    r"(?im)^[ \t]*(?:\*\*)?File:(?:\*\*)?[ \t]*"
+                    rf"(?im)^[ \t]*{file_label}[ \t]*"
                     r"`?([^`\r\n]+?)`?[ \t]*(?:\r?\n[ \t]*)+"
-                    r"(?:\*\*)?Download ID:(?:\*\*)?[ \t]*"
+                    rf"{download_id_label}[ \t]*"
                     r"`?([A-Za-z][A-Za-z0-9_-]+)`?[ \t]*$",
                     content_text,
                 ):
@@ -214,7 +216,10 @@ def response_text_and_files(
             text,
             flags=re.IGNORECASE,
         )
-        file_id_match = re.search(r"Download ID:\s*`?([A-Za-z][A-Za-z0-9_-]+)`?", text)
+        file_id_match = re.search(
+            rf"(?im)^[ \t]*{download_id_label}[ \t]*" r"`?([A-Za-z][A-Za-z0-9_-]+)`?",
+            text,
+        )
         if filename_matches and file_id_match:
             filename = filename_matches[-1]
             file_id = file_id_match.group(1)

@@ -21,11 +21,12 @@ if [ -z "$sql_server_fqdn" ] || [ -z "$sql_server_name" ] || [ -z "$sql_database
   exit 1
 fi
 
-firewall_rule_created=false
+firewall_rule_cleanup_required=false
 cleanup() {
   exit_code=$?
   trap - EXIT
-  if [ "$firewall_rule_created" = true ]; then
+  trap '' INT TERM
+  if [ "$firewall_rule_cleanup_required" = true ]; then
     if ! az sql server firewall-rule delete \
       --subscription "$subscription_id" \
       --resource-group "$resource_group_name" \
@@ -45,6 +46,8 @@ cleanup() {
   exit "$exit_code"
 }
 trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 if [ -z "$deployer_ip_address" ]; then
   if probe_output=$(sqlcmd -S "$sql_server_fqdn" -d "$sql_database_name" -G -b -Q 'SELECT 1;' 2>&1); then
@@ -64,6 +67,7 @@ if [ -z "$deployer_ip_address" ]; then
 fi
 
 if [ -n "$deployer_ip_address" ]; then
+  firewall_rule_cleanup_required=true
   az sql server firewall-rule create \
     --subscription "$subscription_id" \
     --resource-group "$resource_group_name" \
@@ -72,7 +76,6 @@ if [ -n "$deployer_ip_address" ]; then
     --start-ip-address "$deployer_ip_address" \
     --end-ip-address "$deployer_ip_address" \
     --only-show-errors >/dev/null
-  firewall_rule_created=true
 fi
 
 grant_sql="
