@@ -183,7 +183,9 @@ def labeled_fields(output: str) -> dict[str, str]:
         "WHATS_NEW_URL",
     ):
         match = re.search(
-            rf"(?im)^\s*(?:\*\*)?{name}(?:\*\*)?\s*:\s*(.+?)\s*$",
+            rf"(?im)^[ \t]*(?:(?:[-*+]|\d+[.)])[ \t]+)?"
+            rf"(?:\*\*)?{name}(?:\*\*)?[ \t]*:[ \t]*"
+            rf"(?=[^ \t\r\n])([^\r\n]+?)[ \t]*$",
             output,
         )
         if not match:

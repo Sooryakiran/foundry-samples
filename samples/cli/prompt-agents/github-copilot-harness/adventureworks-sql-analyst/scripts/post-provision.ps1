@@ -18,7 +18,7 @@ if (-not $sqlServerFqdn -or -not $sqlServerName -or -not $sqlDatabaseName -or -n
     throw 'Required SQL or Connector Namespace outputs are missing.'
 }
 
-$firewallRuleCreated = $false
+$firewallRuleCleanupRequired = $false
 $operationError = $null
 $cleanupErrorMessage = $null
 
@@ -52,6 +52,7 @@ try {
   }
 
   if ($deployerIpAddress) {
+    $firewallRuleCleanupRequired = $true
     az sql server firewall-rule create `
       --subscription $subscriptionId `
       --resource-group $resourceGroupName `
@@ -63,7 +64,6 @@ try {
     if ($LASTEXITCODE -ne 0) {
       throw 'Failed to create the temporary deployer IP firewall rule.'
     }
-    $firewallRuleCreated = $true
   }
 
   sqlcmd -S $sqlServerFqdn -d $sqlDatabaseName -G -b -Q $grantSql
@@ -80,7 +80,7 @@ catch {
   $operationError = $_
 }
 finally {
-  if ($firewallRuleCreated) {
+  if ($firewallRuleCleanupRequired) {
     az sql server firewall-rule delete `
       --subscription $subscriptionId `
       --resource-group $resourceGroupName `
