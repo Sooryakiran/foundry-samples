@@ -93,4 +93,8 @@ if ! sqlcmd -S "$sql_server_fqdn" -d "$sql_database_name" -G -b -Q "$grant_sql";
   exit 1
 fi
 
-product_count=$(sqlcmd -S "$sql_server_fqdn" -d "$sql_database_name" -G -h -1 -W -Q 'SET NOCOUNT ON; SELECT COUNT(*) FROM SalesLT.Product;' | tr -d '[:space:]')
+if ! product_count_output=$(sqlcmd -S "$sql_server_fqdn" -d "$sql_database_name" -G -b -h -1 -W -Q 'SET NOCOUNT ON; SELECT COUNT(*) FROM SalesLT.Product;'); then
+  echo 'Failed to verify AdventureWorksLT sample data.' >&2
+  exit 1
+fi
+product_count=$(printf '%s' "$product_count_output" | tr -d '[:space:]')

@@ -2,9 +2,8 @@
 
 requiredVersions:
   azd: '>=1.34.2'
-
-extensions:
-  azure.ai.agents: '1.0.0-beta.19'
+  extensions:
+    azure.ai.agents: '1.0.0-beta.19'
 
 name: csv-chart-analyst
 

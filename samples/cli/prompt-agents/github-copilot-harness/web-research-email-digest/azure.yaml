@@ -2,10 +2,9 @@
 
 requiredVersions:
   azd: '>=1.34.2'
-
-extensions:
-  azure.ai.agents: '1.0.0-beta.19'
-  azure.ai.routines: '1.0.0-beta.9.pr.10242.6936260'
+  extensions:
+    azure.ai.agents: '1.0.0-beta.19'
+    azure.ai.routines: '1.0.0-beta.9.pr.10242.6936260'
 
 name: personal-m365-productivity
 

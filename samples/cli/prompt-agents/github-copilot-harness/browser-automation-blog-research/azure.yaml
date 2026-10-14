@@ -2,11 +2,10 @@
 
 requiredVersions:
   azd: '>=1.35.0'
-
-extensions:
-  azure.ai.agents: '1.0.0-beta.19'
-  azure.ai.connections: '>=1.0.0-beta.9'
-  azure.ai.toolboxes: '>=1.0.0-beta.9'
+  extensions:
+    azure.ai.agents: '1.0.0-beta.19'
+    azure.ai.connections: '>=1.0.0-beta.9'
+    azure.ai.toolboxes: '>=1.0.0-beta.9'
 
 name: browser-automation-blog-research
 
