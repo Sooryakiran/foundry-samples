@@ -42,7 +42,7 @@ def register_handlers(agent: AgentApplication[TurnState], settings: Settings) ->
         )
 
     async def respond(context: TurnContext, _state: TurnState) -> None:
-        message = TurnContext.remove_recipient_mention(context.activity).strip()
+        message = (TurnContext.remove_recipient_mention(context.activity) or "").strip()
         if not message:
             await send_reply(
                 context,

@@ -797,6 +797,31 @@ class ActivityTests(_OfflineTestCase):
         )
         self.assertFalse(self.services.requests)
 
+    async def test_attachment_without_text_prompts_without_model_or_toolbox_call(self):
+        payload = deepcopy(ACTIVITY)
+        payload.pop("text")
+        payload["attachments"] = [
+            {
+                "contentType": "image/png",
+                "contentUrl": "https://example.invalid/image.png",
+            }
+        ]
+        with patch.object(TurnContext, "send_activity", new_callable=AsyncMock) as send:
+            response = await self.http.post(
+                "/activity/messages",
+                json=payload,
+                headers={
+                    FOUNDRY_CALL_ID: "activity-caller",
+                    SESSION_ID: "activity-session",
+                    USER_ID: "activity-user",
+                },
+            )
+        self.assertEqual(response.status_code, 202, response.text)
+        send.assert_awaited_once_with(
+            "Ask me about Microsoft documentation or current public web information."
+        )
+        self.assertFalse(self.services.requests)
+
     async def test_toolbox_failure_logged_and_returns_safe_teams_error(self):
         self.services.empty_tools = True
         with (
