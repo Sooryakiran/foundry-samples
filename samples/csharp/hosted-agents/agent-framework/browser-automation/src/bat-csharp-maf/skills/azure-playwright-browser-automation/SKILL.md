@@ -33,4 +33,4 @@ Use `browser_tabs` for tab management, `browser_take_screenshot` for visual evid
 
 Keep sessions open after successful work and while waiting for user input, approval, CAPTCHA, MFA, or manual browser interaction. Resume in the same browser with a fresh snapshot when the user replies.
 
-Call `close_browser_session` only when the user explicitly requests it. If a session becomes unusable, report the problem instead of silently closing it.
+Call `close_browser_session` when the user explicitly requests it or when a session becomes unusable. For an unusable session, make a best-effort close call before reporting the problem.

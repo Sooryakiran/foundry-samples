@@ -44,6 +44,12 @@ dotnet run
 
 Invoke `http://localhost:8088/responses` with a Responses request containing an `input` value. Prefix a request with `/verbose` to include tool-call progress.
 
+## Evaluation
+
+Responses include structured `function_call` and `function_call_output` items with matching `call_id` values, followed by the final assistant message. These items are emitted regardless of `/verbose` and retained when rebuilding conversation history; unmatched tool items at a truncated history boundary are skipped with a warning.
+
+For Foundry agent-target evaluations that need tool evidence, map the evaluator's `response` to `{{sample.output_items}}`, not `{{sample.output_text}}`. See [evaluation data mappings](https://learn.microsoft.com/azure/foundry/observability/how-to/evaluation-dataset-schema#when-you-need-a-data-mapping).
+
 ## Deploy
 
 Run initialization from outside the sample directory:

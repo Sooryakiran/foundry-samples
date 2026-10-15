@@ -70,7 +70,36 @@ def _get_input_text(request: CreateResponse) -> str | None:
 
 def _build_input(current_input: str, history: list) -> list[dict]:
     input_items = []
+    call_ids = {
+        item["call_id"] for item in history
+        if item.get("type") == "function_call"
+    }
+    output_ids = {
+        item["call_id"] for item in history
+        if item.get("type") == "function_call_output"
+    }
+    paired_ids = call_ids & output_ids
     for item in history:
+        item_type = item.get("type")
+        if item_type in ("function_call", "function_call_output"):
+            call_id = item["call_id"]
+            if call_id not in paired_ids:
+                logger.warning("Skipping unmatched tool history item: %s", call_id)
+                continue
+            if item_type == "function_call":
+                input_items.append({
+                    "type": item_type,
+                    "call_id": call_id,
+                    "name": item["name"],
+                    "arguments": item["arguments"],
+                })
+            else:
+                input_items.append({
+                    "type": item_type,
+                    "call_id": call_id,
+                    "output": item["output"],
+                })
+            continue
         for content in item.get("content") or []:
             text = content.get("text")
             if content.get("type") == "output_text" and text:
@@ -330,13 +359,14 @@ async def _run_agent_loop(input_items: list[dict], used_sessions: set[str]):
             return
 
         for call in tool_calls:
+            yield "function_call", call
+            session_text = None
             try:
                 result = await _handle_tool_call(call, used_sessions)
                 if result.live_view_url:
-                    yield (
-                        "session",
+                    session_text = (
                         f"🔴 Created **{result.session_name}**: "
-                        f"[Live View]({result.live_view_url})\n",
+                        f"[Live View]({result.live_view_url})\n"
                     )
                 output = result.output
                 if result.is_error:
@@ -357,7 +387,10 @@ async def _run_agent_loop(input_items: list[dict], used_sessions: set[str]):
                 "call_id": call.call_id,
                 "output": output,
             })
+            yield "function_call_output", input_items[-1]
 
+            if session_text:
+                yield "session", session_text
             yield "log", f"🔧 `{call.name}`\n"
 
     yield "reply", "Tool-call limit reached before the task completed."
@@ -389,13 +422,9 @@ async def handler(
     if verbose_mode:
         user_input = user_input.replace("/verbose", "", 1).strip()
 
-    message_item = stream.add_output_item_message()
-    yield message_item.emit_added()
-    text_content = message_item.add_text_content()
-    yield text_content.emit_added()
-
     if not user_input:
-        yield text_content.emit_delta("No input provided.")
+        for event in stream.output_item_message("No input provided."):
+            yield event
     else:
         try:
             history = await context.get_history()
@@ -406,16 +435,28 @@ async def handler(
         input_items = _build_input(user_input, history)
         used_sessions: set[str] = set()
         final_reply = ""
-        async for kind, text in _run_agent_loop(input_items, used_sessions):
+        async for kind, value in _run_agent_loop(input_items, used_sessions):
             if cancellation_signal.is_set():
-                final_reply = "Request was cancelled."
-                break
-            if kind == "session" or (kind == "log" and verbose_mode):
-                yield text_content.emit_delta(text)
+                yield stream.emit_incomplete()
+                return
+            if kind == "function_call":
+                for event in stream.output_item_function_call(
+                    name=value.name,
+                    call_id=value.call_id,
+                    arguments=value.arguments,
+                ):
+                    yield event
+            elif kind == "function_call_output":
+                for event in stream.output_item_function_call_output(
+                    call_id=value["call_id"], output=value["output"]
+                ):
+                    yield event
+            elif kind == "session" or (kind == "log" and verbose_mode):
+                for event in stream.output_item_message(value):
+                    yield event
             elif kind == "reply":
-                final_reply = text
+                final_reply = value
 
-        yield text_content.emit_delta(final_reply)
         links = [
             f"- **{name}**: "
             + (f"[Live View]({state.live_view_url})"
@@ -423,18 +464,17 @@ async def handler(
             for name, state in _active_sessions.items()
         ]
         if links:
-            yield text_content.emit_delta(
+            final_reply += (
                 "\n\n---\n**Active Browser Sessions:**\n" + "\n".join(links)
             )
             if used_sessions:
-                yield text_content.emit_delta(
+                final_reply += (
                     "\n\n_Used Sessions in this response: "
                     + ", ".join(sorted(used_sessions)) + "_"
                 )
+        for event in stream.output_item_message(final_reply):
+            yield event
 
-    yield text_content.emit_text_done()
-    yield text_content.emit_done()
-    yield message_item.emit_done()
     yield stream.emit_completed()
 
 

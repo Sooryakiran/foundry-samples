@@ -103,6 +103,12 @@ curl -X POST http://localhost:8088/responses \
 
 Prefix a request with `/verbose` to include tool-call progress in the streamed response.
 
+## Evaluation
+
+Responses include structured `function_call` and `function_call_output` items with matching `call_id` values, followed by the final assistant message. These items are emitted regardless of `/verbose` and retained when rebuilding conversation history; unmatched tool items at a truncated history boundary are skipped with a warning.
+
+For Foundry agent-target evaluations that need tool evidence, map the evaluator's `response` to `{{sample.output_items}}`, not `{{sample.output_text}}`. See [evaluation data mappings](https://learn.microsoft.com/azure/foundry/observability/how-to/evaluation-dataset-schema#when-you-need-a-data-mapping).
+
 ## Browser lifecycle
 
 Use `create_session` to open named browsers such as `session1`, `form-browser`, and `scraper`. The runtime maps each name to its service `browserSessionId` and supplies the names, IDs, and last-used default in later requests. Browser tools accept either a friendly name or service ID in `browserSessionId`. Omitting it uses the default, creating a browser named `default` on the first browser action if no browser exists. Direct MCP creation receives an automatic `session-N` name.
