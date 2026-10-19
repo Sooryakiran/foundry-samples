@@ -3,9 +3,9 @@
 azure-ai-agentserver-activity==1.0.0b4
 
 # Microsoft 365 Agents SDK
-microsoft-agents-hosting-core
-microsoft-agents-authentication-msal
-microsoft-agents-activity
+microsoft-agents-hosting-core==1.8.0
+microsoft-agents-authentication-msal==1.8.0
+microsoft-agents-activity==1.8.0
 
 # The M365 SDK connector imports aiohttp but does not declare it; pin explicitly.
 aiohttp>=3.9.0
